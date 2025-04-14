@@ -1,33 +1,50 @@
 import CarSchema from "../schemas/CarSchema.js";
 
+function withDbErrorHandling(fn) {
+  return async function (...args) {
+    try {
+      return await fn(...args);
+    } catch (err) {
+      const message = err.message || "Database operation failed";
+      const status = err.status || 500;
+
+      const dbError = new Error(message);
+      dbError.status = status;
+      dbError.originalError = err;
+
+      throw dbError;
+    }
+  };
+}
+
 export default class CarModel {
-  async createCar(carData) {
+  createCar = withDbErrorHandling(async (carData) => {
     const car = new CarSchema(carData);
     await car.validate();
     return car.save();
-  }
+  });
 
-  async getCarById(carId) {
+  getCarById = withDbErrorHandling(async (carId) => {
     return CarSchema.findById(carId).notDeleted();
-  }
+  });
 
-  async getCars() {
+  getCars = withDbErrorHandling(async () => {
     return CarSchema.find().notDeleted();
-  }
+  });
 
-  async updateCar(carId, updateData) {
+  updateCar = withDbErrorHandling(async (carId, updateData) => {
     return CarSchema.findOneAndUpdate(
       { _id: carId, deletedAt: null },
       updateData,
       { new: true }
     );
-  }
+  });
 
-  async deleteCarById(carId) {
+  deleteCarById = withDbErrorHandling(async (carId) => {
     return CarSchema.findByIdAndUpdate(
       carId,
       { deletedAt: new Date() },
       { new: true }
     );
-  }
+  });
 }
