@@ -1,101 +1,23 @@
 "use client";
-import { useState, useEffect } from "react";
-import { ToastContainer, toast } from "react-toastify";
+
+import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import VehicleList from "@/app/components/VehicleList";
 import VehicleDetails from "@/app/components/VehicleDetails";
-import { IVehicle } from "@/app/types/vehicle";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+import { useVehicleContext } from "@/app/contexts/VehicleContext";
 
 export default function Home() {
-  const [vehicles, setVehicles] = useState<IVehicle[]>([]);
-  const [selectedVehicle, setSelectedVehicle] = useState<IVehicle | null>(null);
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  const fetchVehicles = async () => {
-    try {
-      const response = await fetch(`${API_URL}/cars`);
-      const data = await response.json();
-      setVehicles(data);
-    } catch (error) {
-      toast.error("Erro ao carregar veículos");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchVehicles();
-  }, []);
-
-  const handleAddNewVehicle = async (newVehicle: IVehicle) => {
-    try {
-      const response = await fetch(`${API_URL}/car`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newVehicle),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message);
-      }
-
-      const createdVehicle = await response.json();
-      await fetchVehicles();
-      setShowCreateForm(false);
-      toast.success("Veículo cadastrado com sucesso!");
-    } catch (error: any) {
-      toast.error(error.message);
-    }
-  };
-
-  const handleEdit = async (updatedVehicle: IVehicle) => {
-    try {
-      const response = await fetch(`${API_URL}/car/${updatedVehicle._id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updatedVehicle),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message);
-      }
-
-      const updatedData = await response.json();
-      await fetchVehicles();
-      setSelectedVehicle(null);
-      toast.success("Veículo atualizado com sucesso!");
-    } catch (error: any) {
-      toast.error(error.message);
-    }
-  };
-
-  const handleDelete = async (id: string) => {
-    try {
-      const response = await fetch(`${API_URL}/car/${id}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message);
-      }
-
-      await fetchVehicles();
-      setSelectedVehicle(null);
-      toast.success("Veículo excluído com sucesso!");
-    } catch (error: any) {
-      toast.error(error.message);
-    }
-  };
+  const {
+    vehicles,
+    selectedVehicle,
+    showCreateForm,
+    loading,
+    setSelectedVehicle,
+    setShowCreateForm,
+    handleAddNewVehicle,
+    handleEditVehicle,
+    handleDeleteVehicle,
+  } = useVehicleContext();
 
   if (loading) {
     return (
@@ -140,8 +62,8 @@ export default function Home() {
         <VehicleDetails
           vehicle={selectedVehicle}
           onClose={() => setSelectedVehicle(null)}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
+          onEdit={handleEditVehicle}
+          onDelete={handleDeleteVehicle}
         />
       )}
 
