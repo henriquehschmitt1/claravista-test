@@ -22,7 +22,13 @@ git clone https://github.com/yourusername/claravista-test.git
 cd claravista-test
 ```
 
-2. Install the dependencies:
+2. Set up environment variables:
+
+   - Create a `.env` file in the `backend` directory
+   - Create a `.env` file in the `frontend` directory
+   - You can use the example environment variables from `.env.example` files in both directories as a reference
+
+3. Install the dependencies:
 
 ```bash
 # Install backend dependencies
@@ -34,7 +40,7 @@ cd ../frontend
 npm install
 ```
 
-3. Start the application using Docker Compose:
+4. Start the application using Docker Compose:
 
 ```bash
 docker compose up --build -d
@@ -66,7 +72,11 @@ docker compose down
 
 ```
 claravista-test/
-├── frontend/          # React frontend application
-├── backend/           # Node.js backend server
+├── frontend/          # Next.js frontend application
+│   ├── .env          # Frontend environment variables
+│   └── .env.example  # Example frontend environment variables
+├── backend/          # Node.js backend server
+│   ├── .env         # Backend environment variables
+│   └── .env.example # Example backend environment variables
 └── docker-compose.yml # Docker Compose configuration
 ```
