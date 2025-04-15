@@ -24,8 +24,8 @@ cd claravista-test
 
 2. Set up environment variables:
 
-   - Create a `.env` file in the `backend` directory
-   - Create a `.env` file in the `frontend` directory
+   - Create a `.env` file in the root of `backend` directory
+   - Create a `.env` file in the root of `frontend` directory
    - You can use the example environment variables from `.env.example` files in both directories as a reference
 
 3. Install the dependencies:
