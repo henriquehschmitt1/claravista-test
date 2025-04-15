@@ -32,6 +32,7 @@ cd claravista-test
 
 ```bash
 # Install backend dependencies
+cd apps
 cd backend
 npm install
 
@@ -40,7 +41,16 @@ cd ../frontend
 npm install
 ```
 
-4. Start the application using Docker Compose:
+4. Run backend tests:
+
+```bash
+# Install backend dependencies
+cd apps
+cd backend
+npm run test
+```
+
+5. Start the application using Docker Compose:
 
 ```bash
 docker compose up --build -d
