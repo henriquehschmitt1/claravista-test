@@ -16,6 +16,21 @@ services:
       - mongo
     restart: unless-stopped
 
+  frontend:
+    build:
+      context: ./apps/frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:3000
+    volumes:
+      - ./apps/frontend:/app
+      - /app/node_modules
+    depends_on:
+      - app
+    restart: unless-stopped
+
   mongo:
     image: mongo:6
     ports:

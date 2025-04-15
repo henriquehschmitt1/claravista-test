@@ -1,64 +1,109 @@
-'use client';
-import { useState } from 'react';
-import { v4 as uuidv4 } from 'uuid';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import VehicleList from '@/app/components/VehicleList';
-import VehicleDetails from '@/app/components/VehicleDetails';
-import { IVehicle } from '@/app/types/vehicle';
+"use client";
+import { useState, useEffect } from "react";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import VehicleList from "@/app/components/VehicleList";
+import VehicleDetails from "@/app/components/VehicleDetails";
+import { IVehicle } from "@/app/types/vehicle";
 
-const initialVehicles: IVehicle[] = [
-  {
-    _id: '1',
-    placa: 'ABC1D23',
-    chassi: '9BGVN08JXTM123456',
-    renavam: '12345678901',
-    modelo: 'Onix',
-    marca: 'Chevrolet',
-    ano: 2022
-  },
-  {
-    _id: '2',
-    placa: 'XYZ9A87',
-    chassi: '9BABCD08JXTM654321',
-    renavam: '98765432109',
-    modelo: 'HB20',
-    marca: 'Hyundai',
-    ano: 2023
-  }
-];
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
 export default function Home() {
-  const [vehicles, setVehicles] = useState<IVehicle[]>(initialVehicles);
+  const [vehicles, setVehicles] = useState<IVehicle[]>([]);
   const [selectedVehicle, setSelectedVehicle] = useState<IVehicle | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const handleAddNewVehicle = (newVehicle: IVehicle) => {
-    const placaExists = vehicles.some(v => v.placa === newVehicle.placa);
-    const chassiExists = vehicles.some(v => v.chassi === newVehicle.chassi);
-    const renavamExists = vehicles.some(v => v.renavam === newVehicle.renavam);
-
-    if (placaExists) toast.error('Placa já cadastrada!');
-    if (chassiExists) toast.error('Chassi já cadastrado!');
-    if (renavamExists) toast.error('Renavam já cadastrado!');
-
-    if (!placaExists && !chassiExists && !renavamExists) {
-      setVehicles([...vehicles, { ...newVehicle, _id: uuidv4() }]);
-      setShowCreateForm(false);
-      toast.success('Veículo cadastrado com sucesso!');
+  const fetchVehicles = async () => {
+    try {
+      const response = await fetch(`${API_URL}/cars`);
+      const data = await response.json();
+      setVehicles(data);
+    } catch (error) {
+      toast.error("Erro ao carregar veículos");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleEdit = (updatedVehicle: IVehicle) => {
-    setVehicles(vehicles.map(v => v._id === updatedVehicle._id ? updatedVehicle : v));
-    setSelectedVehicle(null);
+  useEffect(() => {
+    fetchVehicles();
+  }, []);
+
+  const handleAddNewVehicle = async (newVehicle: IVehicle) => {
+    try {
+      const response = await fetch(`${API_URL}/car`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newVehicle),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message);
+      }
+
+      const createdVehicle = await response.json();
+      await fetchVehicles();
+      setShowCreateForm(false);
+      toast.success("Veículo cadastrado com sucesso!");
+    } catch (error: any) {
+      toast.error(error.message);
+    }
   };
 
-  const handleDelete = (id: string) => {
-    setVehicles(vehicles.filter(v => v._id !== id));
-    setSelectedVehicle(null);
-    toast.success('Veículo excluído com sucesso!');
+  const handleEdit = async (updatedVehicle: IVehicle) => {
+    try {
+      const response = await fetch(`${API_URL}/car/${updatedVehicle._id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedVehicle),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message);
+      }
+
+      const updatedData = await response.json();
+      await fetchVehicles();
+      setSelectedVehicle(null);
+      toast.success("Veículo atualizado com sucesso!");
+    } catch (error: any) {
+      toast.error(error.message);
+    }
   };
+
+  const handleDelete = async (id: string) => {
+    try {
+      const response = await fetch(`${API_URL}/car/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message);
+      }
+
+      await fetchVehicles();
+      setSelectedVehicle(null);
+      toast.success("Veículo excluído com sucesso!");
+    } catch (error: any) {
+      toast.error(error.message);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="container text-center py-8">
+        <p>Carregando veículos...</p>
+      </div>
+    );
+  }
 
   return (
     <main className="container">
@@ -77,12 +122,11 @@ export default function Home() {
       {showCreateForm && (
         <VehicleDetails
           vehicle={{
-            _id: 'new',
-            placa: '',
-            chassi: '',
-            renavam: '',
-            modelo: '',
-            marca: '',
+            placa: "",
+            chassi: "",
+            renavam: "",
+            modelo: "",
+            marca: "",
             ano: new Date().getFullYear(),
           }}
           onClose={() => setShowCreateForm(false)}
