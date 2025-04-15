@@ -53,6 +53,9 @@ npm run test
 5. Start the application using Docker Compose:
 
 ```bash
+# Navigate back to project root (/claravista-test)
+cd../..
+# Start the application
 docker compose up --build -d
 ```
 
@@ -82,11 +85,12 @@ docker compose down
 
 ```
 claravista-test/
-├── frontend/          # Next.js frontend application
-│   ├── .env          # Frontend environment variables
-│   └── .env.example  # Example frontend environment variables
-├── backend/          # Node.js backend server
-│   ├── .env         # Backend environment variables
-│   └── .env.example # Example backend environment variables
+├── apps/
+│   ├── frontend/          # Next.js frontend application
+│   │   ├── .env          # Frontend environment variables
+│   │   └── .env.example  # Example frontend environment variables
+│   └── backend/          # Node.js backend server
+│       ├── .env         # Backend environment variables
+│       └── .env.example # Example backend environment variables
 └── docker-compose.yml # Docker Compose configuration
 ```
